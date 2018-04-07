@@ -12,7 +12,7 @@ public class Main {
 		double lambda = 5;
 		double mu = 2;
 		
-		double timeHorizon = 1000;
+		double timeHorizon = 10000;
 		long n = 100;
 		long seed = 0;
 		
