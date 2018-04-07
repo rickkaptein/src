@@ -22,14 +22,19 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final double lambda;	
 	private final int[][] weights;
 	private final int[] seats;
-	private final int products = 9;
+	private final int[] revs;
+	private final int products = 10;
 	private final Counter[] soldProducts = new Counter[products];
+	
 	
 	@AutoCounter("Number of rejected arrivals")
 	private Counter rejected;
 	
 	@AutoCounter("Total arrivals")
 	private Counter arrivals;
+	
+	@AutoCounter("Total revenue")
+	private Counter revenue;
 	
 	@AutoCounter("Sold products A")
 	private Counter soldA;
@@ -69,11 +74,13 @@ public class MMCCState extends SystemState<MMCCState> {
 			double timeHorizon, 
 			long seed,
 			int[][] weights,
-			int[] seats) {
+			int[] seats,
+			int[] revs) {
 		super(timeHorizon, seed);
 		this.lambda = lambda;
 		this.weights = weights;
 		this.seats = seats;
+		this.revs = revs;
 		random = new Random(seed);
 		reset();
 		
@@ -86,6 +93,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		soldProducts[6] = soldG;
 		soldProducts[7] = soldH;
 		soldProducts[8] = soldI;
+		soldProducts[9] = rejected;
 	}
 	
 	@Initialize
@@ -104,14 +112,73 @@ public class MMCCState extends SystemState<MMCCState> {
 	public void doArrival(double eventTime) {
 		double prevTime = getCurrentTime();
 		double newTime = eventTime;
-		
+		int availability[] = new int[products];
+		double probs[] = new double[products];
 		
 		// update counter for total nr of arrivals
 		arrivals.increment();
+				
 		
-		//TODO choose product
+		//TODO
+		int passenger = 0;
+		
+		
+		for (int i=0; i<products; i++) {
+			// check availability seats
+			if (soldProducts[i].getValue() < seats[i]) {
+				availability[i] = 1;
+			}
+			else {
+				availability[i] = 0;
+			}
+		}
+			
+		// check time restriction
+		if (newTime > 179-21) {	
+			availability[3] = 0;
+			availability[7] = 0;
+		}
+		
+		
+		// Calculate probabilities
+		for (int i=0; i<products; i++) {
+			int sum = 0;
+			double prev = 0;
+			
+			if (availability[i] == 0) {
+				probs[i] = 1;
+			}
+			else {
+				for (int j=0; i<products; j++) {
+					sum += availability[j] * weights[passenger][j];
+				}
+				if (i>0) {
+					prev = probs[i-1];
+				}
+				probs[i] = weights[passenger][i] / (sum+.0) + prev;
+			}
+		}
+		
+		
+		// choose product
 		double r = random.nextDouble();
+		boolean stillChoosing = true;
 		
+		while (stillChoosing) {
+			int i = 0;
+				if (r < probs[i]) {
+					
+					soldProducts[i].increment();
+					revenue.incrementBy(revs[i]);
+					
+					stillChoosing = false;
+				}
+				else {
+					i++;
+		}
+		
+		}
+
 		
 		// generate next arrival
 		double currentTime = eventTime;
