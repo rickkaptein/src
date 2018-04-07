@@ -20,7 +20,7 @@ public class Main {
 		
 		
 		
-		MMCCState state = new MMCCState(lambda, timeHorizon, seed);
+		MMCCState state = new MMCCState(lambda, timeHorizon, seed, weights, seats);
 		Replication<MMCCState> replication = new AutoReplication<>(state);
 		
 		Simulation<MMCCState> simulation = new Simulation<>(replication);

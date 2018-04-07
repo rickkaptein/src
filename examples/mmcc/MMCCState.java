@@ -20,12 +20,45 @@ public class MMCCState extends SystemState<MMCCState> {
 		
 	private final Random random;
 	private final double lambda;	
+	private final int[][] weights;
+	private final int[] seats;
+	private final int products = 9;
+	private final Counter[] soldProducts = new Counter[products];
 	
 	@AutoCounter("Number of rejected arrivals")
 	private Counter rejected;
 	
 	@AutoCounter("Total arrivals")
 	private Counter arrivals;
+	
+	@AutoCounter("Sold products A")
+	private Counter soldA;
+	
+	@AutoCounter("Sold products B")
+	private Counter soldB;
+	
+	@AutoCounter("Sold products C")
+	private Counter soldC;
+	
+	@AutoCounter("Sold products D")
+	private Counter soldD;
+	
+	@AutoCounter("Sold products E")
+	private Counter soldE;
+	
+	@AutoCounter("Sold products F")
+	private Counter soldF;
+	
+	@AutoCounter("Sold products G")
+	private Counter soldG;
+	
+	@AutoCounter("Sold products H")
+	private Counter soldH;
+	
+	@AutoCounter("Sold products I")
+	private Counter soldI;
+	
+	
 	
 	// Example of annotation with initializion value
 	@AutoCounter(value="Cumulated time all servers busy", initialValue=0d)
@@ -34,11 +67,25 @@ public class MMCCState extends SystemState<MMCCState> {
 	public MMCCState(
 			double lambda, 
 			double timeHorizon, 
-			long seed) {
+			long seed,
+			int[][] weights,
+			int[] seats) {
 		super(timeHorizon, seed);
 		this.lambda = lambda;
+		this.weights = weights;
+		this.seats = seats;
 		random = new Random(seed);
 		reset();
+		
+		soldProducts[0] = soldA;
+		soldProducts[1] = soldB;
+		soldProducts[2] = soldC;
+		soldProducts[3] = soldD;
+		soldProducts[4] = soldE;
+		soldProducts[5] = soldF;
+		soldProducts[6] = soldG;
+		soldProducts[7] = soldH;
+		soldProducts[8] = soldI;
 	}
 	
 	@Initialize
@@ -63,6 +110,8 @@ public class MMCCState extends SystemState<MMCCState> {
 		arrivals.increment();
 		
 		//TODO choose product
+		double r = random.nextDouble();
+		
 		
 		// generate next arrival
 		double currentTime = eventTime;
