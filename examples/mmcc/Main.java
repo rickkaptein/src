@@ -8,10 +8,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		// parameters
-		double lambda = 5;
 		
 		double timeHorizon = 179;
-		long n = 1000;
+		long n = 1;
 		long seed = 0;
 		int[][] weights = {{11, 15, 18, 20, 19, 15, 12, 11, 13, 8},
 							{8, 9, 11, 12, 14, 15, 16, 18, 20, 8}, 
@@ -21,7 +20,7 @@ public class Main {
 		
 		
 		
-		MMCCState state = new MMCCState(lambda, timeHorizon, seed, weights, seats, revs);
+		MMCCState state = new MMCCState(timeHorizon, seed, weights, seats, revs);
 		Replication<MMCCState> replication = new AutoReplication<>(state);
 		
 		Simulation<MMCCState> simulation = new Simulation<>(replication);

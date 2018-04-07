@@ -7,7 +7,6 @@ import general.SystemState;
 import general.annotations.AutoCounter;
 import general.annotations.AutoMeasure;
 import general.annotations.Initialize;
-import general.annotations.StopCriterium;
 
 /**
  * This class models the system state for a typical M/M/c/c queuing system.
@@ -19,7 +18,6 @@ import general.annotations.StopCriterium;
 public class MMCCState extends SystemState<MMCCState> {
 		
 	private final Random random;
-	private final double lambda;	
 	private final int[][] weights;
 	private final int[] seats;
 	private final int[] revs;
@@ -70,14 +68,12 @@ public class MMCCState extends SystemState<MMCCState> {
 	private Counter busyTime;
 	
 	public MMCCState(
-			double lambda, 
 			double timeHorizon, 
 			long seed,
 			int[][] weights,
 			int[] seats,
 			int[] revs) {
 		super(timeHorizon, seed);
-		this.lambda = lambda;
 		this.weights = weights;
 		this.seats = seats;
 		this.revs = revs;
@@ -98,30 +94,45 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	@Initialize
 	public void initReplication() {
-		double nextArrivalTime = Utils.nextInterArrivalTime(random, lambda);
-		addEvent(nextArrivalTime, this::doArrival);
+		double lambdaBusiness = 1.2* Math.sin((Math.PI*179) / 180);
+		double lambdaLeisure = (0.6*179)/179;
+		double lambdaEconomy = 0.8*(1-(Math.sin((Math.PI*179) / 180)));
+		
+		
+		double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness);
+		addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
+		
+		double nextArrivalTimesLeisure = Utils.nextInterArrivalTime(random, lambdaLeisure);
+		addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
+		
+		double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy);
+		addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
+		
 	}
 	
-	// This serves as an example, the method can be removed...
-	@StopCriterium
-	public boolean veryDangerousCheck() {
-		// A complicated way to write false...
-		return random.nextDouble() > Double.POSITIVE_INFINITY;
+	
+	// call arrival method with passenger type
+	public void doArrivalBusiness(double eventTime) {
+		doArrival(eventTime, 0);
+	}
+	public void doArrivalLeisure(double eventTime) {
+		doArrival(eventTime, 1);
+	}
+	public void doArrivalEconomy(double eventTime) {
+		doArrival(eventTime, 2);
 	}
 	
-	public void doArrival(double eventTime) {
-		double prevTime = getCurrentTime();
+	
+	
+	public void doArrival(double eventTime, int passenger) {
 		double newTime = eventTime;
 		int availability[] = new int[products];
 		double probs[] = new double[products];
 		
+				
 		// update counter for total nr of arrivals
 		arrivals.increment();
-				
-		
-		//TODO
-		int passenger = 0;
-		
+						
 		
 		for (int i=0; i<products; i++) {
 			// check availability seats
@@ -149,7 +160,7 @@ public class MMCCState extends SystemState<MMCCState> {
 				probs[i] = 1;
 			}
 			else {
-				for (int j=0; i<products; j++) {
+				for (int j=0; j<products; j++) {
 					sum += availability[j] * weights[passenger][j];
 				}
 				if (i>0) {
@@ -176,15 +187,24 @@ public class MMCCState extends SystemState<MMCCState> {
 				else {
 					i++;
 				}
-		
 		}
 
 		
 		// generate next arrival
+		double lambda;
+		if (passenger == 0) {
+			lambda = 1.2* Math.sin((Math.PI*179-newTime) / 180);
+		}
+		else if (passenger == 1) {
+			lambda = (0.6*(179-newTime))/179;
+		}
+		else {
+			lambda = 0.8*(1-(Math.sin((Math.PI*(179-newTime)) / 180)));
+		}
 		double currentTime = eventTime;
 		double nextInterArrivalTime = Utils.nextInterArrivalTime(random, lambda);
 		double nextArrivalTime = currentTime + nextInterArrivalTime;
-		addEvent(nextArrivalTime, this::doArrival);
+		addEvent(nextArrivalTime, this::doArrivalBusiness);
 	}
 	
 	
