@@ -153,47 +153,50 @@ public class MMCCState extends SystemState<MMCCState> {
 		
 		
 		// Calculate probabilities
+		int sum = 0;
+		for (int j=0; j<products; j++) {
+			sum += availability[j] * weights[passenger][j];
+		}
+		
 		for (int i=0; i<products; i++) {
-			int sum = 0;
-			double prev = 0;
 			
 			// set probability for unavailable items temporarily at 0
 			if (availability[i] == 0) {
 				probs[i] = 0;
 			}
 			else {
-				for (int j=0; j<products; j++) {
-					sum += availability[j] * weights[passenger][j];
-				}
-				if (i>0) {
-					prev = probs[i-1];
-				}
-				probs[i] = weights[passenger][i] / (sum+.0) + prev;
+				probs[i] = weights[passenger][i] / (sum+.0);
 			}
+			//
+			if (i>0) {
+				probs[i] += probs[i-1];
+			}
+			
 		}
 		
-		// set probabilities for unavailable items at 1
+		// Set probabilities for unavailable products at 0
 		for (int i=0; i<products; i++) {
 			if (availability[i] == 0) {
-				probs[i] = 1;
+				probs[i] = 0;
 			}
 		}
 		
-		
+	
 		// choose product
 		double r = random.nextDouble();
 		boolean stillChoosing = true;
-		int i = 0;
+		int iteration = 0;
 		while (stillChoosing) {
-				if (r < probs[i]) {
+
+				if (r < probs[iteration]) {
 					
-					soldProducts[i].increment();
-					revenue.incrementBy(revs[i]);
+					soldProducts[iteration].increment();
+					revenue.incrementBy(revs[iteration]);
 					
 					stillChoosing = false;
 				}
 				else {
-					i++;
+					iteration++;
 				}
 		}
 
