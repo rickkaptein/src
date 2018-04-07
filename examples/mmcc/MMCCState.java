@@ -129,6 +129,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		int availability[] = new int[products];
 		double probs[] = new double[products];
 		
+		
 				
 		// update counter for total nr of arrivals
 		arrivals.increment();
@@ -156,8 +157,9 @@ public class MMCCState extends SystemState<MMCCState> {
 			int sum = 0;
 			double prev = 0;
 			
+			// set probability for unavailable items temporarily at 0
 			if (availability[i] == 0) {
-				probs[i] = 1;
+				probs[i] = 0;
 			}
 			else {
 				for (int j=0; j<products; j++) {
@@ -170,13 +172,19 @@ public class MMCCState extends SystemState<MMCCState> {
 			}
 		}
 		
+		// set probabilities for unavailable items at 1
+		for (int i=0; i<products; i++) {
+			if (availability[i] == 0) {
+				probs[i] = 1;
+			}
+		}
+		
 		
 		// choose product
 		double r = random.nextDouble();
 		boolean stillChoosing = true;
-		
+		int i = 0;
 		while (stillChoosing) {
-			int i = 0;
 				if (r < probs[i]) {
 					
 					soldProducts[i].increment();
@@ -191,6 +199,9 @@ public class MMCCState extends SystemState<MMCCState> {
 
 		
 		// generate next arrival
+		double currentTime = eventTime;
+		
+		// calculate lambda
 		double lambda;
 		if (passenger == 0) {
 			lambda = 1.2* Math.sin((Math.PI*179-newTime) / 180);
@@ -201,19 +212,31 @@ public class MMCCState extends SystemState<MMCCState> {
 		else {
 			lambda = 0.8*(1-(Math.sin((Math.PI*(179-newTime)) / 180)));
 		}
-		double currentTime = eventTime;
+		
 		double nextInterArrivalTime = Utils.nextInterArrivalTime(random, lambda);
 		double nextArrivalTime = currentTime + nextInterArrivalTime;
-		addEvent(nextArrivalTime, this::doArrivalBusiness);
+		
+		// call next arrival method
+		if (passenger == 0) {
+			addEvent(nextArrivalTime, this::doArrivalBusiness);
+		}
+		else if (passenger == 1) {
+			addEvent(nextArrivalTime, this::doArrivalLeisure);
+		}
+		else {
+			addEvent(nextArrivalTime, this::doArrivalEconomy);
+		}
 	}
 	
 	
 	
 	@AutoMeasure("Rejection probability")
 	public double getRejectionProbability() {
-		
-		
 		return rejected.getValue()/arrivals.getValue();
+	}
+	@AutoMeasure("Total revenue")
+	public double getTotalRevenue() {
+		return revenue.getValue();
 	}
 	
 
