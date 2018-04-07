@@ -28,15 +28,4 @@ public final class Utils {
 		return -Math.log(1-r)/lambda;
 	}
 	
-	/**
-	 * This method is identical to {@link #nextInterArrivalTime(Random, double)}.
-	 * 
-	 * @param random	{@link Random} object used to draw pseudo-random numbers
-	 * @param mu		Service rate
-	 * @return			Returns a realization drawn from an exponential distribution, with rate {@code mu}, 
-	 * 					representing the next service time.
-	 */
-	public static double nextServiceTime(Random random, double mu) {
-		return nextInterArrivalTime(random, mu);
-	}
 }

@@ -22,11 +22,9 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	private final Random random;
 	private final double lambda;
-	private final double mu;
 	private final int nServers;
 	
-	@AutoCounter("Server utilization cumulative")
-	private Counter utilization;
+
 	
 	@AutoCounter("Number of rejected arrivals")
 	private Counter rejected;
@@ -41,13 +39,11 @@ public class MMCCState extends SystemState<MMCCState> {
 	public MMCCState(
 			int nServers, 
 			double lambda, 
-			double mu, 
 			double timeHorizon, 
 			long seed) {
 		super(timeHorizon, seed);
 		this.nServers = nServers;
 		this.lambda = lambda;
-		this.mu = mu;
 		random = new Random(seed);
 		reset();
 	}
@@ -69,8 +65,6 @@ public class MMCCState extends SystemState<MMCCState> {
 		double prevTime = getCurrentTime();
 		double newTime = eventTime;
 		
-		// update counter for server utilization
-		utilization.incrementBy((newTime - prevTime)*serversBusy);
 		
 		// update counter for total nr of arrivals
 		arrivals.increment();
@@ -86,11 +80,6 @@ public class MMCCState extends SystemState<MMCCState> {
 			// update system state
 			serversBusy++;
 
-			// generate next departure
-			double currentTime = eventTime;
-			double serviceDuration = Utils.nextServiceTime(random, mu);
-			double departureTime = currentTime + serviceDuration;
-			addEvent(departureTime, this::doDeparture);
 		}
 		
 		// generate next arrival
@@ -100,27 +89,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		addEvent(nextArrivalTime, this::doArrival);
 	}
 	
-	public void doDeparture(double eventTime) {
-		double prevTime = getCurrentTime();
-		double newTime = eventTime;
-		
-		// update counter for server utilization
-		utilization.incrementBy((newTime - prevTime)*serversBusy);
-		
-		// update counter for all servers busy, only if all servers busy
-		if (serversBusy == nServers) {
-			busyTime.incrementBy(newTime - prevTime);
-		}
-
-		// decrease number of busy servers by 1
-		serversBusy--;
-	}
 	
-	@AutoMeasure("Busy fraction")
-	public Double getBusyFraction() {
-		//TODO: add the actual computation
-		return 0d;
-	}
 	
 	@AutoMeasure("Rejection probability")
 	public double getRejectionProbability() {
