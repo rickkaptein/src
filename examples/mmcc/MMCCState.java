@@ -158,16 +158,16 @@ public class MMCCState extends SystemState<MMCCState> {
 			sum += availability[j] * weights[passenger][j];
 		}
 		
+		
 		for (int i=0; i<products; i++) {
-			
-			// set probability for unavailable items temporarily at 0
+			// set probability for unavailable items at 0
 			if (availability[i] == 0) {
 				probs[i] = 0;
 			}
 			else {
 				probs[i] = weights[passenger][i] / (sum+.0);
 			}
-			//
+			// add previous probability
 			if (i>0) {
 				probs[i] += probs[i-1];
 			}
@@ -207,7 +207,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		// calculate lambda
 		double lambda;
 		if (passenger == 0) {
-			lambda = 1.2* Math.sin((Math.PI*179-newTime) / 180);
+			lambda = 1.2* Math.sin((Math.PI*(179-newTime)) / 180);
 		}
 		else if (passenger == 1) {
 			lambda = (0.6*(179-newTime))/179;
