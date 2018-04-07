@@ -97,11 +97,6 @@ public class MMCCState extends SystemState<MMCCState> {
 		return 0d;
 	}
 	
-	@AutoMeasure("Server utilization")
-	public Double getServerUtilization() {
-		//TODO: add the actual computation
-		return 0d;
-	}
 
 	@Override
 	public void reset() {
