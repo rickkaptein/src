@@ -8,7 +8,6 @@ public class Main {
 
 	public static void main(String[] args) {
 		// parameters
-		int nServers = 3;
 		double lambda = 5;
 		
 		double timeHorizon = 179;

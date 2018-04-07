@@ -17,9 +17,7 @@ import general.annotations.StopCriterium;
  */
 
 public class MMCCState extends SystemState<MMCCState> {
-	
-	private int serversBusy;
-	
+		
 	private final Random random;
 	private final double lambda;	
 	
@@ -85,7 +83,7 @@ public class MMCCState extends SystemState<MMCCState> {
 
 	@Override
 	public void reset() {
-		serversBusy = 0;
+		
 		// TODO: do not forget to edit this method if you ever change this class!
 	}
 }
