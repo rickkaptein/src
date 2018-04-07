@@ -15,7 +15,7 @@ public class Main {
 		long n = 1000;
 		long seed = 0;
 		
-		MMCCState state = new MMCCState(nServers, lambda, timeHorizon, seed);
+		MMCCState state = new MMCCState(lambda, timeHorizon, seed);
 		Replication<MMCCState> replication = new AutoReplication<>(state);
 		
 		Simulation<MMCCState> simulation = new Simulation<>(replication);

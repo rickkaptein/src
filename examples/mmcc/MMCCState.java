@@ -21,10 +21,7 @@ public class MMCCState extends SystemState<MMCCState> {
 	private int serversBusy;
 	
 	private final Random random;
-	private final double lambda;
-	private final int nServers;
-	
-
+	private final double lambda;	
 	
 	@AutoCounter("Number of rejected arrivals")
 	private Counter rejected;
@@ -37,12 +34,10 @@ public class MMCCState extends SystemState<MMCCState> {
 	private Counter busyTime;
 	
 	public MMCCState(
-			int nServers, 
 			double lambda, 
 			double timeHorizon, 
 			long seed) {
 		super(timeHorizon, seed);
-		this.nServers = nServers;
 		this.lambda = lambda;
 		random = new Random(seed);
 		reset();
@@ -69,18 +64,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		// update counter for total nr of arrivals
 		arrivals.increment();
 		
-		if (serversBusy == nServers) {
-			// update counter for rejection of arrival
-			rejected.increment();
-			
-			// update counter for all servers busy, only if all servers busy
-			busyTime.incrementBy(newTime - prevTime);
-		} else {
-			// immediately get serviced
-			// update system state
-			serversBusy++;
-
-		}
+		//TODO choose product
 		
 		// generate next arrival
 		double currentTime = eventTime;
@@ -93,8 +77,9 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	@AutoMeasure("Rejection probability")
 	public double getRejectionProbability() {
-		//TODO: add the actual computation
-		return 0d;
+		
+		
+		return rejected.getValue()/arrivals.getValue();
 	}
 	
 
