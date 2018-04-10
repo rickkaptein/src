@@ -298,6 +298,11 @@ public class MMCCState extends SystemState<MMCCState> {
 		double nextInterArrivalTime = Utils.nextInterArrivalTime(random, lambda);
 		double nextArrivalTime = currentTime + nextInterArrivalTime;
 		
+		/*Calculate antithetic variables
+		double nextInterArrivalTime2 = 1- nextInterArrivalTime;
+		double nextArrivalTime2 = currentTime + nextInterArrivalTime2;
+		*/
+		
 		// call next arrival method
 		if (passenger == 0) {
 			addEvent(nextArrivalTime, this::doArrivalBusiness);
