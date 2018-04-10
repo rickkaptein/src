@@ -285,11 +285,6 @@ public class MMCCState extends SystemState<MMCCState> {
 			soldOutAll.increment();
 		}
 		
-		
-		
-		
-
-		
 		// generate next arrival
 		double currentTime = eventTime;
 		
@@ -460,7 +455,7 @@ public class MMCCState extends SystemState<MMCCState> {
 
 	@Override
 	public void reset() {
-		
+		evenNumber = true;
 		// TODO: do not forget to edit this method if you ever change this class!
 	}
 }
