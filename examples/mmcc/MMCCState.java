@@ -282,7 +282,6 @@ public class MMCCState extends SystemState<MMCCState> {
 			}
 		}
 		if (soldOutCounter == products-1) {
-			System.out.println("error");
 			soldOutAll.increment();
 		}
 		
@@ -310,7 +309,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		double nextInterArrivalTime;
 
 		//a boolean variable to switch between question a-b and c
-		boolean c = false;
+		boolean c = true;
 		
 		//Question a and b
 		if (c == false) {
@@ -367,11 +366,6 @@ public class MMCCState extends SystemState<MMCCState> {
 	@AutoMeasure("Total revenue")
 	public double getTotalRevenue() {
 		return revenue.getValue();
-	}
-	
-	@AutoMeasure("Fraction sold A")
-	public double getSoldA() {
-		return soldA.getValue()/seats[0];
 	}
 	
 	@AutoMeasure("Sold out product A")
