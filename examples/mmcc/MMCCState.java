@@ -98,6 +98,10 @@ public class MMCCState extends SystemState<MMCCState> {
 
 	@AutoCounter("Sold out product I")
 	private Counter soldOutI;
+	
+	@AutoCounter("Sold out all products")
+	private Counter soldOutAll;
+	
 	// Example of annotation with initialization value
 	@AutoCounter(value="Cumulated time all servers busy", initialValue=0d)
 	private Counter busyTime;
@@ -259,11 +263,20 @@ public class MMCCState extends SystemState<MMCCState> {
 				}
 		}
 		
+		// Update counters for sold out products
+		int soldOutCounter = 0;
 		for (int i=0; i<products-1; i++) {
 			if (soldProducts[i].getValue() == seats[i]) {
+				soldOutCounter++;
 				soldOutProducts[i].increment();
 			}
 		}
+		if (soldOutCounter == products -1) {
+			soldOutAll.increment();
+		}
+		
+		
+		
 		
 
 		
@@ -295,6 +308,8 @@ public class MMCCState extends SystemState<MMCCState> {
 		else {
 			addEvent(nextArrivalTime, this::doArrivalEconomy);
 		}
+		
+		
 	}
 	
 	
@@ -402,6 +417,15 @@ public class MMCCState extends SystemState<MMCCState> {
 		double result = 0;
 		if (soldOutI.getValue() > 0) {
 			result = soldOutI.getValue() / soldOutI.getValue();
+		}
+		return result;
+	}
+	
+	@AutoMeasure("All products sold out")
+	public double getSoldOutAll() {
+		double result = 0;
+		if (soldOutAll.getValue() > 0) {
+			result = soldOutAll.getValue() / soldOutAll.getValue();
 		}
 		return result;
 	}
