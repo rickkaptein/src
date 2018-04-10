@@ -25,8 +25,18 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final Counter[] soldProducts = new Counter[products];
 	
 	
-	@AutoCounter("Number of rejected arrivals")
+	@AutoCounter("Total number of rejected arrivals")
 	private Counter rejected;
+	
+	@AutoCounter("Number of rejected business arrivals")
+	private Counter rejectedB;
+	
+	@AutoCounter("Number of rejected leisure arrivals")
+	private Counter rejectedL;
+	
+	@AutoCounter("Number of rejected economy arrivals")
+	private Counter rejectedE;
+	
 	
 	@AutoCounter("Total arrivals")
 	private Counter arrivals;
@@ -193,6 +203,19 @@ public class MMCCState extends SystemState<MMCCState> {
 					soldProducts[iteration].increment();
 					revenue.incrementBy(revs[iteration]);
 					
+					//Increment rejection counter per class
+					if (iteration == 9) {
+						if (passenger == 0) {
+							rejectedB.increment();
+						}
+						else if (passenger == 1) {
+							rejectedL.increment();
+						}
+						else {
+							rejectedE.increment();
+						}
+					}
+					
 					stillChoosing = false;
 				}
 				else {
@@ -237,6 +260,19 @@ public class MMCCState extends SystemState<MMCCState> {
 	public double getRejectionProbability() {
 		return rejected.getValue()/arrivals.getValue();
 	}
+	@AutoMeasure("Rejection probability business")
+	public double getRejectionBProbability() {
+		return rejectedB.getValue()/arrivals.getValue();
+	}
+	@AutoMeasure("Rejection probability leisure")
+	public double getRejectionLProbability() {
+		return rejectedL.getValue()/arrivals.getValue();
+	}
+	@AutoMeasure("Rejection probability economy")
+	public double getRejectionEProbability() {
+		return rejectedE.getValue()/arrivals.getValue();
+	}
+	
 	@AutoMeasure("Total revenue")
 	public double getTotalRevenue() {
 		return revenue.getValue();
