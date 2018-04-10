@@ -23,6 +23,7 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final int[] revs;
 	private final int products = 10;
 	private final Counter[] soldProducts = new Counter[products];
+	private final Counter[] soldOutProducts = new Counter[products];
 	
 	
 	@AutoCounter("Total number of rejected arrivals")
@@ -70,9 +71,33 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	@AutoCounter("Sold products I")
 	private Counter soldI;
-	
-	
-	
+
+	@AutoCounter("Sold out product A")
+	private Counter soldOutA;
+
+	@AutoCounter("Sold out product B")
+	private Counter soldOutB;
+
+	@AutoCounter("Sold out product C")
+	private Counter soldOutC;
+
+	@AutoCounter("Sold out product D")
+	private Counter soldOutD;
+
+	@AutoCounter("Sold out product E")
+	private Counter soldOutE;
+
+	@AutoCounter("Sold out product F")
+	private Counter soldOutF;
+
+	@AutoCounter("Sold out product G")
+	private Counter soldOutG;
+
+	@AutoCounter("Sold out product H")
+	private Counter soldOutH;
+
+	@AutoCounter("Sold out product I")
+	private Counter soldOutI;
 	// Example of annotation with initializion value
 	@AutoCounter(value="Cumulated time all servers busy", initialValue=0d)
 	private Counter busyTime;
@@ -100,6 +125,17 @@ public class MMCCState extends SystemState<MMCCState> {
 		soldProducts[7] = soldH;
 		soldProducts[8] = soldI;
 		soldProducts[9] = rejected;
+		
+		soldOutProducts[0] = soldOutA;
+		soldOutProducts[1] = soldOutB;
+		soldOutProducts[2] = soldOutC;
+		soldOutProducts[3] = soldOutD;
+		soldOutProducts[4] = soldOutE;
+		soldOutProducts[5] = soldOutF;
+		soldOutProducts[6] = soldOutG;
+		soldOutProducts[7] = soldOutH;
+		soldOutProducts[8] = soldOutI;
+		
 	}
 	
 	@Initialize
@@ -134,6 +170,7 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	
 	
+	@SuppressWarnings("unlikely-arg-type")
 	public void doArrival(double eventTime, int passenger) {
 		double newTime = eventTime;
 		int availability[] = new int[products];
@@ -222,6 +259,13 @@ public class MMCCState extends SystemState<MMCCState> {
 					iteration++;
 				}
 		}
+		
+		for (int i=0; i<products-1; i++) {
+			if (soldProducts[i].getValue() == seats[i]) {
+				soldOutProducts[i].increment();
+			}
+		}
+		
 
 		
 		// generate next arrival
@@ -276,6 +320,60 @@ public class MMCCState extends SystemState<MMCCState> {
 	@AutoMeasure("Total revenue")
 	public double getTotalRevenue() {
 		return revenue.getValue();
+	}
+	
+	@AutoMeasure("Fraction sold A")
+	public double getSoldA() {
+		return soldA.getValue()/seats[0];
+	}
+	
+	@AutoMeasure("Sold out product A")
+	public double getSoldOutA() {
+		double result = 0;
+		if (soldOutA.getValue() > 0) {
+			result = soldOutA.getValue() / soldOutA.getValue();
+		}
+		return result;
+	}
+	
+	@AutoMeasure("Sold out product B")
+	public double getSoldOutB() {
+		return soldOutB.getValue();
+	}
+	
+	@AutoMeasure("Sold out product C")
+	public double getSoldOutC() {
+		return soldOutC.getValue();
+	}
+	
+	@AutoMeasure("Sold out product D")
+	public double getSoldOutD() {
+		return soldOutD.getValue();
+	}
+	
+	@AutoMeasure("Sold out product E")
+	public double getSoldOutE() {
+		return soldOutE.getValue();
+	}
+	
+	@AutoMeasure("Sold out product F")
+	public double getSoldOutF() {
+		return soldOutF.getValue();
+	}
+	
+	@AutoMeasure("Sold out product G")
+	public double getSoldOutG() {
+		return soldOutG.getValue();
+	}
+	
+	@AutoMeasure("Sold out product H")
+	public double getSoldOutH() {
+		return soldOutH.getValue();
+	}
+	
+	@AutoMeasure("Sold out product I")
+	public double getSoldOutI() {
+		return soldOutI.getValue();
 	}
 	
 
