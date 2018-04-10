@@ -98,7 +98,7 @@ public class MMCCState extends SystemState<MMCCState> {
 
 	@AutoCounter("Sold out product I")
 	private Counter soldOutI;
-	// Example of annotation with initializion value
+	// Example of annotation with initialization value
 	@AutoCounter(value="Cumulated time all servers busy", initialValue=0d)
 	private Counter busyTime;
 	
@@ -170,7 +170,6 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	
 	
-	@SuppressWarnings("unlikely-arg-type")
 	public void doArrival(double eventTime, int passenger) {
 		double newTime = eventTime;
 		int availability[] = new int[products];
@@ -338,42 +337,73 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	@AutoMeasure("Sold out product B")
 	public double getSoldOutB() {
-		return soldOutB.getValue();
+		double result = 0;
+		if (soldOutB.getValue() > 0) {
+			result = soldOutB.getValue() / soldOutB.getValue();
+		}
+		return result;
 	}
 	
 	@AutoMeasure("Sold out product C")
 	public double getSoldOutC() {
-		return soldOutC.getValue();
+		double result = 0;
+		if (soldOutC.getValue() > 0) {
+			result = soldOutC.getValue() / soldOutC.getValue();
+		}
+		return result;
 	}
 	
 	@AutoMeasure("Sold out product D")
 	public double getSoldOutD() {
-		return soldOutD.getValue();
-	}
+		double result = 0;
+		if (soldOutD.getValue() > 0) {
+			result = soldOutD.getValue() / soldOutD.getValue();
+		}
+		return result;	}
 	
 	@AutoMeasure("Sold out product E")
 	public double getSoldOutE() {
-		return soldOutE.getValue();
+		double result = 0;
+		if (soldOutE.getValue() > 0) {
+			result = soldOutE.getValue() / soldOutE.getValue();
+		}
+		return result;
 	}
 	
 	@AutoMeasure("Sold out product F")
 	public double getSoldOutF() {
-		return soldOutF.getValue();
+		double result = 0;
+		if (soldOutE.getValue() > 0) {
+			result = soldOutE.getValue() / soldOutE.getValue();
+		}
+		return result;
 	}
 	
 	@AutoMeasure("Sold out product G")
 	public double getSoldOutG() {
-		return soldOutG.getValue();
+		double result = 0;
+		if (soldOutG.getValue() > 0) {
+			result = soldOutG.getValue() / soldOutG.getValue();
+		}
+		return result;
 	}
 	
 	@AutoMeasure("Sold out product H")
 	public double getSoldOutH() {
-		return soldOutH.getValue();
+		double result = 0;
+		if (soldOutH.getValue() > 0) {
+			result = soldOutH.getValue() / soldOutH.getValue();
+		}
+		return result;
 	}
 	
 	@AutoMeasure("Sold out product I")
 	public double getSoldOutI() {
-		return soldOutI.getValue();
+		double result = 0;
+		if (soldOutI.getValue() > 0) {
+			result = soldOutI.getValue() / soldOutI.getValue();
+		}
+		return result;
 	}
 	
 
