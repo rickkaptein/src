@@ -388,8 +388,8 @@ public class MMCCState extends SystemState<MMCCState> {
 	@AutoMeasure("Sold out product F")
 	public double getSoldOutF() {
 		double result = 0;
-		if (soldOutE.getValue() > 0) {
-			result = soldOutE.getValue() / soldOutE.getValue();
+		if (soldOutF.getValue() > 0) {
+			result = soldOutF.getValue() / soldOutF.getValue();
 		}
 		return result;
 	}
