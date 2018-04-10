@@ -28,4 +28,9 @@ public final class Utils {
 		return -Math.log(1-r)/lambda;
 	}
 	
+	// Specific for question c
+	public static double nextInterArrivalTimeWithoutRandom(double r, double lambda) {
+		return -Math.log(1-r)/lambda;
+	}
+	
 }

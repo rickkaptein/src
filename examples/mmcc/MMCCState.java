@@ -7,6 +7,7 @@ import general.SystemState;
 import general.annotations.AutoCounter;
 import general.annotations.AutoMeasure;
 import general.annotations.Initialize;
+import general.annotations.StopCriterium;
 
 /**
  * This class models the system state for a typical M/M/c/c queuing system.
@@ -24,6 +25,9 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final int products = 10;
 	private final Counter[] soldProducts = new Counter[products];
 	private final Counter[] soldOutProducts = new Counter[products];
+	
+	private boolean evenNumber = true;
+	private double prevRandom;
 	
 	
 	@AutoCounter("Total number of rejected arrivals")
@@ -148,7 +152,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		double lambdaLeisure = (0.6*179)/179;
 		double lambdaEconomy = 0.8*(1-(Math.sin((Math.PI*179) / 180)));
 		
-		
+
 		double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness);
 		addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
 		
@@ -158,6 +162,12 @@ public class MMCCState extends SystemState<MMCCState> {
 		double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy);
 		addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
 		
+	}
+	
+	@StopCriterium
+	public boolean allProductsSold() {
+		
+		return soldOutAll.getValue()>0;
 	}
 	
 	
@@ -271,7 +281,8 @@ public class MMCCState extends SystemState<MMCCState> {
 				soldOutProducts[i].increment();
 			}
 		}
-		if (soldOutCounter == products -1) {
+		if (soldOutCounter == products-1) {
+			System.out.println("error");
 			soldOutAll.increment();
 		}
 		
@@ -295,13 +306,32 @@ public class MMCCState extends SystemState<MMCCState> {
 			lambda = 0.8*(1-(Math.sin((Math.PI*(179-newTime)) / 180)));
 		}
 		
-		double nextInterArrivalTime = Utils.nextInterArrivalTime(random, lambda);
-		double nextArrivalTime = currentTime + nextInterArrivalTime;
 		
-		/*Calculate antithetic variables
-		double nextInterArrivalTime2 = 1- nextInterArrivalTime;
-		double nextArrivalTime2 = currentTime + nextInterArrivalTime2;
-		*/
+		double nextInterArrivalTime;
+
+		//a boolean variable to switch between question a-b and c
+		boolean c = false;
+		
+		//Question a and b
+		if (c == false) {
+			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda);
+		}
+		//Question c
+		else {
+			if (evenNumber == true) {
+				double randomNumber = random.nextDouble();
+				nextInterArrivalTime= Utils.nextInterArrivalTimeWithoutRandom(randomNumber, lambda);
+				prevRandom = randomNumber;
+				evenNumber = false;
+			}
+			else {
+				nextInterArrivalTime= Utils.nextInterArrivalTimeWithoutRandom(1-prevRandom, lambda);
+				evenNumber = true;
+			}
+		}		
+		
+		
+		double nextArrivalTime = currentTime + nextInterArrivalTime;
 		
 		// call next arrival method
 		if (passenger == 0) {
@@ -313,8 +343,6 @@ public class MMCCState extends SystemState<MMCCState> {
 		else {
 			addEvent(nextArrivalTime, this::doArrivalEconomy);
 		}
-		
-		
 	}
 	
 	
