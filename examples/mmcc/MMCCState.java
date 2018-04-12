@@ -1,5 +1,6 @@
 package examples.mmcc;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import general.Counter;
@@ -25,6 +26,7 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final int products = 10;
 	private final Counter[] soldProducts = new Counter[products];
 	private final Counter[] soldOutProducts = new Counter[products];
+	private final String question;
 	
 	private boolean evenNumber = true;
 	private double prevRandom;
@@ -115,11 +117,13 @@ public class MMCCState extends SystemState<MMCCState> {
 			long seed,
 			int[][] weights,
 			int[] seats,
-			int[] revs) {
+			int[] revs,
+			String question) {
 		super(timeHorizon, seed);
 		this.weights = weights;
 		this.seats = seats;
 		this.revs = revs;
+		this.question = question;
 		random = new Random(seed);
 		reset();
 		
@@ -166,7 +170,6 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	@StopCriterium
 	public boolean allProductsSold() {
-		
 		return soldOutAll.getValue()>0;
 	}
 	
@@ -188,28 +191,57 @@ public class MMCCState extends SystemState<MMCCState> {
 		double newTime = eventTime;
 		int availability[] = new int[products];
 		double probs[] = new double[products];
-		
-		
 				
 		// update counter for total nr of arrivals
 		arrivals.increment();
-						
-		
-		for (int i=0; i<products; i++) {
-			// check availability seats
-			if (soldProducts[i].getValue() < seats[i]) {
-				availability[i] = 1;
+					
+
+		// check available products
+		if (question == "a" || question == "b" || question == "c") {
+			for (int i=0; i<products; i++) {
+				// check availability seats
+				if (soldProducts[i].getValue() < seats[i]) {
+					availability[i] = 1;
+				}
+				else {
+					availability[i] = 0;
+				}
 			}
-			else {
-				availability[i] = 0;
+			// check time restriction
+			if (newTime > 179-21) {	
+				availability[3] = 0;
+				availability[7] = 0;
 			}
 		}
+		//Question d
+		else {
+			boolean stillChecking = true;
+			availability[9] = 1;
+			int i = products -2;
 			
-		// check time restriction
-		if (newTime > 179-21) {	
-			availability[3] = 0;
-			availability[7] = 0;
+			while (stillChecking) {
+				if (i>0) {
+					if (soldProducts[i].getValue() < seats[i]) {
+						availability[i] = 1;
+						stillChecking = false;
+						
+						// check time restriction of products D and H
+						if (newTime > 179-21 && (i==3||i==7)) {	
+							availability[i] = 0;
+							i--;
+						}
+					}
+					else {
+						availability[i] = 0;
+						i--;
+					}
+				}
+				else {
+					stillChecking = false;
+				}
+			}
 		}
+	
 		
 		
 		// Calculate probabilities
@@ -303,11 +335,9 @@ public class MMCCState extends SystemState<MMCCState> {
 		
 		double nextInterArrivalTime;
 
-		//a boolean variable to switch between question a-b and c
-		boolean c = true;
 		
 		//Question a and b
-		if (c == false) {
+		if (question == "a" || question == "b") {
 			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda);
 		}
 		//Question c
