@@ -23,8 +23,14 @@ public final class Utils {
 	 * @return			Returns a realization drawn from an exponential distribution, with rate {@code lambda}, 
 	 * 					representing the next inter-arrival time.
 	 */
-	public static double nextInterArrivalTime(Random random, double lambda) {
-		double r = random.nextDouble();
+	public static double nextInterArrivalTime(Random random, double lambda, boolean evenIteration) {
+		double r;
+		if (evenIteration) {
+			r = random.nextDouble();
+		}
+		else {
+			r = 1-random.nextDouble();
+		}
 		return -Math.log(1-r)/lambda;
 	}
 	

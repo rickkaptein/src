@@ -19,7 +19,7 @@ import general.annotations.StopCriterium;
 
 public class MMCCState extends SystemState<MMCCState> {
 		
-	private final Random random;
+	private Random random;
 	private final int[][] weights;
 	private final int[] seats;
 	private final int[] revs;
@@ -27,8 +27,10 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final Counter[] soldProducts = new Counter[products];
 	private final Counter[] soldOutProducts = new Counter[products];
 	private final String question;
+	private long prevSeed;
+	private boolean evenIteration;
 	
-	private boolean evenNumber = true;
+	private boolean evenNumber = false;
 	private double prevRandom;
 	
 	
@@ -124,8 +126,9 @@ public class MMCCState extends SystemState<MMCCState> {
 		this.seats = seats;
 		this.revs = revs;
 		this.question = question;
+		this.prevSeed = seed;
 		random = new Random(seed);
-		reset();
+		evenIteration = false;
 		
 		soldProducts[0] = soldA;
 		soldProducts[1] = soldB;
@@ -157,13 +160,13 @@ public class MMCCState extends SystemState<MMCCState> {
 		double lambdaEconomy = 0.8*(1-(Math.sin((Math.PI*179) / 180)));
 		
 
-		double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness);
+		double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness, true);
 		addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
 		
-		double nextArrivalTimesLeisure = Utils.nextInterArrivalTime(random, lambdaLeisure);
+		double nextArrivalTimesLeisure = Utils.nextInterArrivalTime(random, lambdaLeisure, true);
 		addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
 		
-		double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy);
+		double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy, true);
 		addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
 		
 	}
@@ -275,7 +278,13 @@ public class MMCCState extends SystemState<MMCCState> {
 		
 	
 		// choose product
-		double r = random.nextDouble();
+		double r;
+		if (question == "a" || question == "b") {
+			r = random.nextDouble();
+		}
+		else {
+			r = 1-random.nextDouble();
+		}
 		boolean stillChoosing = true;
 		int iteration = 0;
 		while (stillChoosing) {
@@ -338,20 +347,11 @@ public class MMCCState extends SystemState<MMCCState> {
 		
 		//Question a and b
 		if (question == "a" || question == "b") {
-			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda);
+			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda, true);
 		}
 		//Question c
 		else {
-			if (evenNumber == true) {
-				double randomNumber = random.nextDouble();
-				nextInterArrivalTime= Utils.nextInterArrivalTimeWithoutRandom(randomNumber, lambda);
-				prevRandom = randomNumber;
-				evenNumber = false;
-			}
-			else {
-				nextInterArrivalTime= Utils.nextInterArrivalTimeWithoutRandom(1-prevRandom, lambda);
-				evenNumber = true;
-			}
+			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda, evenIteration);
 		}		
 		
 		
@@ -485,7 +485,17 @@ public class MMCCState extends SystemState<MMCCState> {
 
 	@Override
 	public void reset() {
-		evenNumber = true;
-		// TODO: do not forget to edit this method if you ever change this class!
+		
+		if (question != "a" || question != "b") {
+			evenIteration = !evenIteration;
+
+			// Store seed value from even iterations
+			if (evenIteration) {
+				prevSeed = random.nextLong();
+			}
+
+			// reuse seed value
+			random = new Random(prevSeed);
+		}
 	}
 }

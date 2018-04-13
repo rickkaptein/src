@@ -10,7 +10,7 @@ public class Main {
 		// parameters
 		
 		double timeHorizon = 179;
-		long n = 1000;
+		long n = 2000;
 		long seed = 0;
 		int[][] weights = {{11, 15, 18, 20, 19, 15, 12, 11, 13, 8},
 							{8, 9, 11, 12, 14, 15, 16, 18, 20, 8}, 
