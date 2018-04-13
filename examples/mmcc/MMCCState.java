@@ -312,10 +312,59 @@ public class MMCCState extends SystemState<MMCCState> {
 
 				if (r < probs[iteration]) {
 					
-					soldProducts[iteration].increment();
-					revenue.incrementBy(revs[iteration]);
+					if (question == "a" || question == "b" || question == "c" || question == "d") {
+						soldProducts[iteration].increment();
+						revenue.incrementBy(revs[iteration]);
+					}
 					
-					//Increment rejection counter per class
+					//For question e
+					else {
+						double rand;
+						int increment = 0;
+						int rejection = 0;
+						
+						//Generate new random number
+						if (evenIteration) {
+							rand = random.nextDouble();
+						}
+						else {
+							rand = 1-random.nextDouble();
+						}
+						
+						// Choose amount of products
+						if (rand < 0.55) {
+							increment = 1;
+						}
+						else if (rand < 0.85) {
+							if (seats[iteration] - soldProducts[iteration].getValue()  >= 2) {
+								increment = 2;
+							}
+							else {
+								rejection = 2;
+							}
+						}
+						else if (rand < 0.95) {
+							if (seats[iteration] - soldProducts[iteration].getValue()  >= 3) {
+								increment = 3;
+							}
+							else {
+								rejection = 3;
+							}
+						}
+						else {
+							if (seats[iteration] - soldProducts[iteration].getValue()  >= 4) {
+								increment = 4;
+							}
+							else {
+								rejection = 4;
+							}
+						}
+						soldProducts[iteration].incrementBy(increment);
+						revenue.incrementBy(increment*revs[iteration]);	
+					}
+					
+					
+					//Increment rejection counter per class if no product is chosen
 					if (iteration == 9) {
 						if (passenger == 0) {
 							rejectedB.increment();
