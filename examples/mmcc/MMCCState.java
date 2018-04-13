@@ -24,6 +24,8 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final int[] seats;
 	private final int[] revs;
 	private final int products = 10;
+	private final double [] mu;
+	private final double [] sigma;
 	private final Counter[] soldProducts = new Counter[products];
 	private final Counter[] soldOutProducts = new Counter[products];
 	private final String question;
@@ -120,11 +122,15 @@ public class MMCCState extends SystemState<MMCCState> {
 			int[][] weights,
 			int[] seats,
 			int[] revs,
+			double[] mu,
+			double[] sigma,
 			String question) {
 		super(timeHorizon, seed);
 		this.weights = weights;
 		this.seats = seats;
 		this.revs = revs;
+		this.mu = mu;
+		this.sigma = sigma;
 		this.question = question;
 		this.prevSeed = seed;
 		random = new Random(seed);
@@ -160,14 +166,26 @@ public class MMCCState extends SystemState<MMCCState> {
 		double lambdaEconomy = 0.8*(1-(Math.sin((Math.PI*179) / 180)));
 		
 
-		double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness, true);
-		addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
-		
-		double nextArrivalTimesLeisure = Utils.nextInterArrivalTime(random, lambdaLeisure, true);
-		addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
-		
-		double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy, true);
-		addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
+		if (question == "a" || question == "b" || question == "c" || question == "d") {
+			double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness, true);
+			addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
+			
+			double nextArrivalTimesLeisure = Utils.nextInterArrivalTime(random, lambdaLeisure, true);
+			addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
+			
+			double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy, true);
+			addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
+		}
+		else {
+			double nextArrivalTimesBusiness = Utils.nextInterArrivalTimeNormal(random, mu[0], sigma[0], true);
+			addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
+			
+			double nextArrivalTimesLeisure = Utils.nextInterArrivalTimeNormal(random, mu[1], sigma[1], true);
+			addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
+			
+			double nextArrivalTimesEconomy = Utils.nextInterArrivalTimeNormal(random, mu[2], sigma[2], true);
+			addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
+		}
 		
 	}
 	
@@ -179,18 +197,18 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	// call arrival method with passenger type
 	public void doArrivalBusiness(double eventTime) {
-		doArrival(eventTime, 0);
+		doArrival(eventTime, 0, mu[0], sigma[0]);
 	}
 	public void doArrivalLeisure(double eventTime) {
-		doArrival(eventTime, 1);
+		doArrival(eventTime, 1, mu[1], sigma[1]);
 	}
 	public void doArrivalEconomy(double eventTime) {
-		doArrival(eventTime, 2);
+		doArrival(eventTime, 2, mu[2], sigma[2]);
 	}
 	
 	
 	
-	public void doArrival(double eventTime, int passenger) {
+	public void doArrival(double eventTime, int passenger, double mu, double sigma) {
 		double newTime = eventTime;
 		int availability[] = new int[products];
 		double probs[] = new double[products];
@@ -283,7 +301,12 @@ public class MMCCState extends SystemState<MMCCState> {
 			r = random.nextDouble();
 		}
 		else {
-			r = 1-random.nextDouble();
+			if (evenIteration) {
+				r = random.nextDouble();
+			}
+			else {
+				r = 1-random.nextDouble();
+			}
 		}
 		boolean stillChoosing = true;
 		int iteration = 0;
@@ -349,10 +372,14 @@ public class MMCCState extends SystemState<MMCCState> {
 		if (question == "a" || question == "b") {
 			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda, true);
 		}
-		//Question c
-		else {
+		//Question c and d
+		else if (question == "c" || question == "d") {
 			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda, evenIteration);
-		}		
+		}	
+		//Question e
+		else {
+			nextInterArrivalTime = Utils.nextInterArrivalTimeNormal(random, mu, sigma, evenIteration);
+		}
 		
 		
 		double nextArrivalTime = currentTime + nextInterArrivalTime;

@@ -20,6 +20,7 @@ public final class Utils {
 	/**
 	 * @param random	{@link Random} object used to draw pseudo-random numbers
 	 * @param lambda	Arrival rate
+	 * @param evenIteration	
 	 * @return			Returns a realization drawn from an exponential distribution, with rate {@code lambda}, 
 	 * 					representing the next inter-arrival time.
 	 */
@@ -34,9 +35,66 @@ public final class Utils {
 		return -Math.log(1-r)/lambda;
 	}
 	
-	// Specific for question c
-	public static double nextInterArrivalTimeWithoutRandom(double r, double lambda) {
-		return -Math.log(1-r)/lambda;
+	
+	/**
+	 * @param random	{@link Random} object used to draw pseudo-random numbers
+	 * @param mu	Arrival rate
+	 * @return			Returns a realization drawn from an exponential distribution, with rate {@code lambda}, 
+	 * 					representing the next inter-arrival time.
+	 */
+	public static double nextInterArrivalTimeNormal(Random random, double mu, double sigma, boolean evenIteration) {
+		double u1;
+		double u2;
+		boolean outOfRange = true;
+		double y1;
+		double y2;
+		double z;
+		double inter = 0;
+		
+		
+		if (evenIteration) {
+			while (outOfRange) {
+				u1 = random.nextDouble();
+				u2 = random.nextDouble();
+				y1 = -Math.log(u1);
+				y2 = -Math.log(u2);
+				
+				if (y2 >= Math.pow(y1-1, 2)/2) {
+					if (random.nextDouble() <= 0.5) {
+						z = y1;
+					}
+					else {
+						z = -y1;
+					}
+					inter = mu + z * sigma;
+					if (inter>0) {
+						outOfRange = false;
+					}
+				}
+			}
+		}
+		else {
+			while (outOfRange) {
+				u1 = 1- random.nextDouble();
+				u2 = 1- random.nextDouble();
+				y1 = -Math.log(u1);
+				y2 = -Math.log(u2);
+				
+				if (y2 >= Math.pow(y1-1, 2)/2) {
+					if (random.nextDouble() <= 0.5) {
+						z = y1;
+					}
+					else {
+						z = -y1;
+					}
+					inter = mu + z * sigma;
+					if (inter>0) {
+						outOfRange = false;
+					}
+				}
+			}
+		}
+		return inter;
 	}
 	
 }

@@ -17,11 +17,13 @@ public class Main {
 							{1, 5, 8, 10, 11, 12, 13, 15, 20, 8}};
 		int[] seats = {20,20,20,20,20,20,20,20,20,Integer.MAX_VALUE};
 		int[] revs = {1000, 900, 850, 750, 700, 650, 600, 500, 350, 0};
-		String question = "d";
+		double[] mu = {0.8, 0.4, 0.6};
+		double[] sigma = {0.2, 0.1, 0.15};
+		String question = "e";
 		
 		
 		
-		MMCCState state = new MMCCState(timeHorizon, seed, weights, seats, revs, question);
+		MMCCState state = new MMCCState(timeHorizon, seed, weights, seats, revs, mu, sigma, question);
 		Replication<MMCCState> replication = new AutoReplication<>(state);
 		
 		Simulation<MMCCState> simulation = new Simulation<>(replication);
