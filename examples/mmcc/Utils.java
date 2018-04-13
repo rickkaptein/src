@@ -39,6 +39,8 @@ public final class Utils {
 	/**
 	 * @param random	{@link Random} object used to draw pseudo-random numbers
 	 * @param mu	Arrival rate
+	 * @param sigma	Standard deviation
+	 * @param evenIteration	true for even iterations, false for uneven iterations
 	 * @return			Returns a realization drawn from an exponential distribution, with rate {@code lambda}, 
 	 * 					representing the next inter-arrival time.
 	 */

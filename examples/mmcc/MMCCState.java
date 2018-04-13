@@ -32,8 +32,6 @@ public class MMCCState extends SystemState<MMCCState> {
 	private long prevSeed;
 	private boolean evenIteration;
 	
-	private boolean evenNumber = false;
-	private double prevRandom;
 	
 	
 	@AutoCounter("Total number of rejected arrivals")
@@ -208,7 +206,7 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	
 	
-	public void doArrival(double eventTime, int passenger, double mu, double sigma) {
+	public void doArrival(double eventTime, int passenger, double muArrival, double sigmaArrival) {
 		double newTime = eventTime;
 		int availability[] = new int[products];
 		double probs[] = new double[products];
@@ -234,7 +232,7 @@ public class MMCCState extends SystemState<MMCCState> {
 				availability[7] = 0;
 			}
 		}
-		//Question d
+		//Question d and e
 		else {
 			boolean stillChecking = true;
 			availability[9] = 1;
@@ -366,7 +364,6 @@ public class MMCCState extends SystemState<MMCCState> {
 		
 		
 		double nextInterArrivalTime;
-
 		
 		//Question a and b
 		if (question == "a" || question == "b") {
@@ -378,7 +375,7 @@ public class MMCCState extends SystemState<MMCCState> {
 		}	
 		//Question e
 		else {
-			nextInterArrivalTime = Utils.nextInterArrivalTimeNormal(random, mu, sigma, evenIteration);
+			nextInterArrivalTime = Utils.nextInterArrivalTimeNormal(random, muArrival, sigmaArrival, evenIteration);
 		}
 		
 		
@@ -512,7 +509,7 @@ public class MMCCState extends SystemState<MMCCState> {
 
 	@Override
 	public void reset() {
-		
+				
 		if (question != "a" || question != "b") {
 			evenIteration = !evenIteration;
 
