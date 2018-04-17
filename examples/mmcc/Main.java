@@ -19,9 +19,7 @@ public class Main {
 		int[] revs = {1000, 900, 850, 750, 700, 650, 600, 500, 350, 0};
 		double[] mu = {0.8, 0.4, 0.6};
 		double[] sigma = {0.2, 0.1, 0.15};
-		String question = "e";
-		
-		
+		String question = "a";
 		
 		MMCCState state = new MMCCState(timeHorizon, seed, weights, seats, revs, mu, sigma, question);
 		Replication<MMCCState> replication = new AutoReplication<>(state);

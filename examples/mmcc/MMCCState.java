@@ -28,6 +28,7 @@ public class MMCCState extends SystemState<MMCCState> {
 	private final double [] sigma;
 	private final Counter[] soldProducts = new Counter[products];
 	private final Counter[] soldOutProducts = new Counter[products];
+	private final Counter[] arrivalsArray = new Counter[3];
 	private final String question;
 	private long prevSeed;
 	private boolean evenIteration;
@@ -49,6 +50,15 @@ public class MMCCState extends SystemState<MMCCState> {
 	
 	@AutoCounter("Total arrivals")
 	private Counter arrivals;
+	
+	@AutoCounter("Total arrivals business")
+	private Counter arrivalsB;
+	
+	@AutoCounter("Total arrivals leisure")
+	private Counter arrivalsL;
+	
+	@AutoCounter("Total arrivals economy")
+	private Counter arrivalsE;
 	
 	@AutoCounter("Total revenue")
 	private Counter revenue;
@@ -155,24 +165,40 @@ public class MMCCState extends SystemState<MMCCState> {
 		soldOutProducts[7] = soldOutH;
 		soldOutProducts[8] = soldOutI;
 		
+		arrivalsArray[0] = arrivalsB;
+		arrivalsArray[1] = arrivalsL;
+		arrivalsArray[2] = arrivalsE;
+		
 	}
 	
 	@Initialize
 	public void initReplication() {
 		double lambdaBusiness = 1.2* Math.sin((Math.PI*179) / 180);
 		double lambdaLeisure = (0.6*179)/179;
-		double lambdaEconomy = 0.8*(1-(Math.sin((Math.PI*179) / 180)));
+		double lambdaEconomy = 0.8*(1-(Math.sin((Math.PI*179) / 180)));		
 		
-
+		double nextArrivalTimesBusiness = Utils.nextArrivalTime(random, 0, 0);
+		addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
+		
+		double nextArrivalTimesLeisure = Utils.nextArrivalTime(random, 0, 1);
+		addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
+		
+		double nextArrivalTimesEconomy = Utils.nextArrivalTime(random, 0, 2);
+		addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
+		
+		/*
 		if (question == "a" || question == "b" || question == "c" || question == "d") {
 			double nextArrivalTimesBusiness = Utils.nextInterArrivalTime(random, lambdaBusiness, true);
 			addEvent(nextArrivalTimesBusiness, this::doArrivalBusiness);
+			System.out.println(nextArrivalTimesBusiness);
 			
 			double nextArrivalTimesLeisure = Utils.nextInterArrivalTime(random, lambdaLeisure, true);
 			addEvent(nextArrivalTimesLeisure, this::doArrivalLeisure);
+			System.out.println(nextArrivalTimesLeisure);
 			
 			double nextArrivalTimesEconomy = Utils.nextInterArrivalTime(random, lambdaEconomy, true);
 			addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
+			System.out.println(nextArrivalTimesEconomy);
 		}
 		else {
 			double nextArrivalTimesBusiness = Utils.nextInterArrivalTimeNormal(random, mu[0], sigma[0], true);
@@ -184,6 +210,9 @@ public class MMCCState extends SystemState<MMCCState> {
 			double nextArrivalTimesEconomy = Utils.nextInterArrivalTimeNormal(random, mu[2], sigma[2], true);
 			addEvent(nextArrivalTimesEconomy, this::doArrivalEconomy);
 		}
+		*/
+		
+		
 		
 	}
 	
@@ -213,6 +242,7 @@ public class MMCCState extends SystemState<MMCCState> {
 				
 		// update counter for total nr of arrivals
 		arrivals.increment();
+		arrivalsArray[passenger].increment();
 					
 
 		// check available products
@@ -276,7 +306,7 @@ public class MMCCState extends SystemState<MMCCState> {
 				probs[i] = 0;
 			}
 			else {
-				probs[i] = weights[passenger][i] / (sum+.0);
+				probs[i] = weights[passenger][i] / ((double)sum);
 			}
 			// add previous probability
 			if (i>0) {
@@ -309,79 +339,85 @@ public class MMCCState extends SystemState<MMCCState> {
 		boolean stillChoosing = true;
 		int iteration = 0;
 		while (stillChoosing) {
+			boolean rejection = false;
 
-				if (r < probs[iteration]) {
+			if (r < probs[iteration]) {
+				
+				if (question == "a" || question == "b" || question == "c" || question == "d") {
+					soldProducts[iteration].increment();
+					revenue.incrementBy(revs[iteration]);
+				}
+				
+				//For question e
+				else if (iteration != 9){
+					double rand;
+					int increment = 0;
 					
-					if (question == "a" || question == "b" || question == "c" || question == "d") {
-						soldProducts[iteration].increment();
-						revenue.incrementBy(revs[iteration]);
+					//Generate new random number
+					if (evenIteration) {
+						rand = random.nextDouble();
 					}
-					
-					//For question e
 					else {
-						double rand;
-						int increment = 0;
-						int rejection = 0;
-						
-						//Generate new random number
-						if (evenIteration) {
-							rand = random.nextDouble();
-						}
-						else {
-							rand = 1-random.nextDouble();
-						}
-						
-						// Choose amount of products
-						if (rand < 0.55) {
-							increment = 1;
-						}
-						else if (rand < 0.85) {
-							if (seats[iteration] - soldProducts[iteration].getValue()  >= 2) {
-								increment = 2;
-							}
-							else {
-								rejection = 2;
-							}
-						}
-						else if (rand < 0.95) {
-							if (seats[iteration] - soldProducts[iteration].getValue()  >= 3) {
-								increment = 3;
-							}
-							else {
-								rejection = 3;
-							}
-						}
-						else {
-							if (seats[iteration] - soldProducts[iteration].getValue()  >= 4) {
-								increment = 4;
-							}
-							else {
-								rejection = 4;
-							}
-						}
-						soldProducts[iteration].incrementBy(increment);
-						revenue.incrementBy(increment*revs[iteration]);	
+						rand = 1-random.nextDouble();
 					}
 					
-					
-					//Increment rejection counter per class if no product is chosen
-					if (iteration == 9) {
-						if (passenger == 0) {
-							rejectedB.increment();
-						}
-						else if (passenger == 1) {
-							rejectedL.increment();
+					//Choose amount of products
+					if (rand < 0.55) {
+						increment = 1;
+					}
+					else if (rand < 0.85) {
+						if (seats[iteration] - soldProducts[iteration].getValue()  >= 2) {
+							increment = 2;
 						}
 						else {
-							rejectedE.increment();
+							rejection = true;
 						}
 					}
-					
-					stillChoosing = false;
+					else if (rand < 0.95) {
+						if (seats[iteration] - soldProducts[iteration].getValue()  >= 3) {
+							increment = 3;
+						}
+						else {
+							rejection = true;
+						}
+					}
+					else {
+						if (seats[iteration] - soldProducts[iteration].getValue()  >= 4) {
+							increment = 4;
+						}
+						else {
+							rejection = true;
+						}
+					}
+					soldProducts[iteration].incrementBy(increment);
+					if (rejection) {
+						soldProducts[9].increment();
+					}
+					revenue.incrementBy(increment*revs[iteration]);
 				}
 				else {
-					iteration++;
+					soldProducts[9].increment();
 				}
+				
+				
+				//Increment rejection counter per class if no product is chosen
+				if (iteration == 9 || rejection) {
+					if (passenger == 0) {
+						rejectedB.increment();
+					}
+					else if (passenger == 1) {
+						rejectedL.increment();
+					}
+					else {
+						rejectedE.increment();
+					}
+				}
+				
+				stillChoosing = false;
+			}
+			else {
+				iteration++;
+			}
 		}
 		
 		// Update counters for sold out products
@@ -412,23 +448,21 @@ public class MMCCState extends SystemState<MMCCState> {
 		}
 		
 		
-		double nextInterArrivalTime;
+		double nextArrivalTime;
 		
 		//Question a and b
 		if (question == "a" || question == "b") {
-			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda, true);
+			nextArrivalTime= currentTime + Utils.nextInterArrivalTime(random, lambda, true);
+			//nextArrivalTime = Utils.nextArrivalTime(random, newTime, passenger);
 		}
 		//Question c and d
 		else if (question == "c" || question == "d") {
-			nextInterArrivalTime= Utils.nextInterArrivalTime(random, lambda, evenIteration);
+			nextArrivalTime= currentTime + Utils.nextInterArrivalTime(random, lambda, evenIteration);
 		}	
 		//Question e
 		else {
-			nextInterArrivalTime = Utils.nextInterArrivalTimeNormal(random, muArrival, sigmaArrival, evenIteration);
+			nextArrivalTime = currentTime + Utils.nextInterArrivalTimeNormal(random, muArrival, sigmaArrival, evenIteration);
 		}
-		
-		
-		double nextArrivalTime = currentTime + nextInterArrivalTime;
 		
 		// call next arrival method
 		if (passenger == 0) {
@@ -443,22 +477,25 @@ public class MMCCState extends SystemState<MMCCState> {
 	}
 	
 	
-	
 	@AutoMeasure("Rejection probability")
 	public double getRejectionProbability() {
 		return rejected.getValue()/arrivals.getValue();
 	}
 	@AutoMeasure("Rejection probability business")
 	public double getRejectionBProbability() {
-		return rejectedB.getValue()/arrivals.getValue();
+		double result = 0;
+		if (arrivalsArray[0].getValue() > 0) {
+			result = rejectedB.getValue()/arrivalsArray[0].getValue();
+		}
+		return result;
 	}
 	@AutoMeasure("Rejection probability leisure")
 	public double getRejectionLProbability() {
-		return rejectedL.getValue()/arrivals.getValue();
+		return rejectedL.getValue()/arrivalsArray[1].getValue();
 	}
 	@AutoMeasure("Rejection probability economy")
 	public double getRejectionEProbability() {
-		return rejectedE.getValue()/arrivals.getValue();
+		return rejectedE.getValue()/arrivalsArray[2].getValue();
 	}
 	
 	@AutoMeasure("Total revenue")

@@ -35,6 +35,43 @@ public final class Utils {
 		return -Math.log(1-r)/lambda;
 	}
 	
+	/**
+	 * @param random	{@link Random} object used to draw pseudo-random numbers
+	 * @param lambda	Arrival rate
+	 * @param evenIteration	
+	 * @return			Returns a realization drawn from an exponential distribution, with rate {@code lambda}, 
+	 * 					representing the next inter-arrival time.
+	 */
+	public static double nextArrivalTime(Random random, double time, int passenger) {
+		double u1;
+		double u2;
+		double t = time;
+		double[] lambdaMax = {1.2, 0.6, 0.8};
+		while (true) {
+			u1 = random.nextDouble();
+			u2 = random.nextDouble();
+			t = t - Math.log(u1)/lambdaMax[passenger];
+			if (t > 179 || u2 <= lambda(179 - t, passenger)/lambdaMax[passenger]) {
+				return t;
+			}
+		}
+	}
+	
+	static double lambda(double t, int passenger) {
+		double l;
+		if (passenger == 0) {
+			l = 1.2* Math.sin((Math.PI*(179-t)) / 180);
+		}
+		else if (passenger == 1) {
+			l = (0.6*(179-t))/179;
+		}
+		else {
+			l = 0.8*(1-(Math.sin((Math.PI*(179-t)) / 180)));
+		}
+		return l;
+	}
+	
+	
 	
 	/**
 	 * @param random	{@link Random} object used to draw pseudo-random numbers
